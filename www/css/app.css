@@ -1,0 +1,106 @@
+#imageGrid .shadow:hover {
+  -moz-box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  box-shadow: 0 0 5px rgba(0,0,0,0.5);
+  cursor: pointer;}
+
+#imageGrid table.data {
+  height:100%;
+  width:100%;
+  table-layout:fixed;
+}
+
+#imageGrid table.data td {
+  text-align: center;
+  vertical-align: middle;
+  width: 33.33%;
+  height: 270px;
+}
+
+#imageGrid td img {
+  max-height: 350px;
+  max-width: 350px;
+}
+
+#imageGrid {
+  width: 100%;
+}
+
+#popup {
+  position: relative;
+  left: -11px;
+}
+
+#figImage img {
+  max-width: 100%;
+  height: auto;
+}
+
+
+#figImage_only img {
+  max-width: 500px;
+  max-height:500px;
+}
+
+
+
+.skin-black .content-wrapper{
+ background-color: white;
+}
+
+section.sidebar .shiny-input-container{
+  padding: 2px 10px 2px 10px;
+  
+}
+
+.form-group{
+  margin-bottom:0px;
+}
+
+label{
+  font-weight:500;
+}
+
+hr{
+  margin-top: 5px;
+  margin-bottom: 5px;
+  color:#CFBDBD;
+  height: 12px;
+  border: 0;
+  box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);
+}
+
+h4 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 10px;
+  color:#6FA1C4;
+  font-size:16px;
+}
+
+
+.regular-content{
+    height:25px;
+    /*position: absolute; Position the background text*/
+    /*bottom: 0;  At the bottom. Use top:0 to append it to the top */
+    vertical-align:bottom;
+    background-color: white;
+    color: white;
+    width: 100%; /* Full width */
+}
+
+.special-content{
+    height:25px;
+    /*position: absolute; Position the background text*/
+    /*bottom: 0;  At the bottom. Use top:0 to append it to the top */
+    text-align:center;
+    background-color: rgb(196, 73, 52);
+    background-color: rgba(196, 73, 52, 0.7); /*Black background with 0.7 opacity */
+    color: #f1f1f1; /* Grey text */
+    width: 100%; /* Full width */
+}
+
+.table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th{
+  border: 5px solid #f4f4f4;
+}
+
