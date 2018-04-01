@@ -38,15 +38,16 @@
 
 
 #figImage_only img {
-  max-width: 500px;
+  height: auto;
   max-height:500px;
+  max-width:100%;
 }
-
 
 
 .skin-black .content-wrapper{
  background-color: white;
 }
+
 
 section.sidebar .shiny-input-container{
   padding: 2px 10px 2px 10px;
@@ -103,4 +104,7 @@ h4 {
 .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th{
   border: 5px solid #f4f4f4;
 }
+
+/* Vertical scroll bar */
+.body { height: 90vh; overflow-y: auto; }
 

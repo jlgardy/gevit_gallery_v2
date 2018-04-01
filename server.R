@@ -33,12 +33,21 @@ commonWords<- inner_join(commonWords,select(datSub,figID_initial), by="figID_ini
 #function to filter data are return ID
 filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
   if(!is.null(filtOpts)){
+    if(colFilt %in% c("addedMarks","reencodedMarks")){
+      if(filtOpts){
+        return(dat[!is.na(dat[,colFilt]),"figID_initial"])
+      }else{
+        return(dat[,"figID_initial"])
+      }
+      
+    }else{
     tmp<-sapply(filtOpts,function(x){
       sapply(dat[,colFilt],function(y){grepl(x,y)})
     })
     foundItems<-rowSums(tmp)
     
     return(unique(dat[foundItems>0,"figID_initial"]))
+    }
   }else{
     return(unique(dat[,"figID_initial"]))
   }
@@ -68,10 +77,12 @@ shinyServer(function(input, output,session) {
     filtID<-c(filtData(tmpDat,"chartCombinations",input$chartCombo)$figID_initial,
               filtData(tmpDat,"chartType",input$chartType)$figID_initial,
               filtData(tmpDat,"Pathogen",input$pathogenSelect)$figID_initial,
-              filtData(tmpDat,"concepts",input$conceptSelect)$figID_initial)
+              filtData(tmpDat,"concepts",input$conceptSelect)$figID_initial,
+              filtData(tmpDat,"addedMarks",input$addMarksSelect)$figID_initial,
+              filtData(tmpDat,"reencodedMarks",input$rencodeMarksSelect)$figID_initial)
     
     tmp<-table(filtID)
-    tmp<-tmp[tmp==4]
+    tmp<-tmp[tmp==6]
     
     if(length(tmp)==0){
       empty_figs <- "There are no visualizations that match your filtering criteria."
@@ -165,7 +176,6 @@ shinyServer(function(input, output,session) {
 
   })
   
-
   #-----------------------------------------------
   # WIDGETS
   #-----------------------------------------------
@@ -245,4 +255,92 @@ shinyServer(function(input, output,session) {
                 selected=NULL,
                 multiple=TRUE)
   })
+  
+  #-----------------------------------------------
+  # SUMMARIES
+  #-----------------------------------------------
+  #output figure metadata
+  output$imageInfo<-renderUI({
+    outText<-NULL
+    if(length(values$code) > 0) {
+      tmp<-filter(datSub,figID_initial == values$code)
+      outText<-HTML(sprintf("<b>ID:</b>%s<br><em>%s</em>(%d) <a href='https://www.ncbi.nlm.nih.gov/pubmed/%s' target='_blank'>doi</a>",tmp$figID_initial,tmp$Title,tmp$YearPub,tmp$PMID))
+    }
+    outText
+  })
+  
+  
+  #output table for figure metadata
+  
+  output$summaryImageTable<-renderTable({
+    if(length(values$code) == 0) {
+      NULL
+    } else {
+      tmp<-filter(datSub,figID_initial == values$code)
+  
+      #chart types
+      chartType<-unlist(strsplit(tmp$chartType,";"))
+      specialChartType<-unlist(strsplit(tmp$specialChartType,";"))
+      
+      if(length(chartType) == length(specialChartType)){
+        chartTypes<-data.frame(item = rep("Chart Type",length(chartType)),
+                               chartType = chartType,
+                               specialChartType = specialChartType,
+                               stringsAsFactors = FALSE)
+      }else{
+        chartTypes<-cbind(tmp$chartType,tmp$specialChartType)
+      }
+      
+      
+      #added marks
+      if(!is.na(tmp$addedMarks)){
+        addedMarks<-unname(parseMarkText(tmp$addedMarks))
+        addedMarks<-data.frame(item=rep("Added Marks",nrow(addedMarks)),
+                               chartType = addedMarks[,1],
+                               specialChartType = addedMarks[,2],
+                               stringsAsFactors = FALSE)
+        #colnames(addedMarks)<-c("item","chartType","specialChartType")
+      }else{
+        addedMarks<-data.frame(item="Added Marks",chartType=NA,specialChartType=NA)
+      }
+      
+      #rencoded marks
+      if(!is.na(tmp$reencodedMarks)){
+        rencodedMarks<-unname(parseMarkText(tmp$reencodedMarks))
+        rencodedMarks<-data.frame(item=rep("Re-encoded Marks",nrow(rencodedMarks)),
+                                  chartType = rencodedMarks[,1],
+                                  specialChartType = rencodedMarks[,2],
+                                  stringsAsFactors = FALSE)
+        #colnames(addedMarks)<-c("item","chartType","specialChartType")
+      }else{
+        rencodedMarks<-data.frame(item="Re-encoded Marks",chartType=NA,specialChartType=NA)
+      }
+      
+      #annotations
+      #rencoded marks
+      if(!is.na(tmp$annotations)){
+        annotationsMarks<-unname(parseMarkText(tmp$annotations))
+        annotationsMarks<-data.frame(item=rep("Annotations",nrow(annotationsMarks)),
+                                     chartType = annotationsMarks[,1],
+                                     specialChartType = annotationsMarks[,2],
+                                     stringsAsFactors = FALSE)
+        #colnames(addedMarks)<-c("item","chartType","specialChartType")
+      }else{
+        annotationsMarks<-data.frame(item="Annotations",chartType=NA,specialChartType=NA)
+      }
+      
+      #putting it together
+      outfig<-rbind(chartTypes,
+                    c("Chart Combinations",tmp$chartCombinations,NA),
+                    addedMarks,
+                    rencodedMarks,
+                    annotationsMarks)
+      
+      outfig %>% filter(!is.na(chartType))
+    }
+    
+  },
+  colnames=FALSE,
+  rownames=FALSE)
+
 })

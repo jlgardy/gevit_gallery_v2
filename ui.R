@@ -21,9 +21,27 @@ body<-dashboardBody(
              tableOutput("imageGrid")
     ),
     tabPanel("Figure",
-             
-             materialSwitch(inputId = "enableZoom", label = "Enable Image Zoom", status = "danger"),
-             imageOutput("figImage_only")
+             hr(),
+             uiOutput("imageInfo"),
+             hr(),
+             fluidRow(
+               column(width=7,
+                      h3("Data Visualization"),
+                      fluidRow(column(width = 1,tags$div(id = "popup",
+                                                         helpPopup(strong("Image Zooming Actions"),
+                                                                   includeMarkdown("explainerMarkDown/testExplainer.md"),
+                                                                   placement = "right", trigger = "click"))),
+                               column(width = 11, 
+                                      materialSwitch(inputId = "enableZoom", label = "Enable Image Zoom", status = "danger"))
+                               ),
+                      
+                      imageOutput("figImage_only")
+                      ),
+               column(width=5,
+                      h3("GEViT Breakdown"),
+                      tableOutput("summaryImageTable")
+                    )
+             )
     ),
     id="opsPanel"
   )
@@ -57,6 +75,11 @@ sideDash<-dashboardSidebar(
                      label = "Chart Combinations",
                      choices = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
                      selected = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General")),
+  HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
+  materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
+  br(),
+  materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE),
+  
   hr(),
   h4("Paper Look-up")
 )

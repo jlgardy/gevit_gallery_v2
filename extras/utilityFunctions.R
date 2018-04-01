@@ -71,7 +71,6 @@ parseMarkText<-function(A=NULL){
 # essentially, reduces calculating item multiple times
 
 ## Chart Types
-
 getChartRln<-function(datSub = NULL){
   tmp<-apply(datSub[,c("chartType","specialChartType")],1,function(x){
     
@@ -94,4 +93,18 @@ getChartRln<-function(datSub = NULL){
     count()
   
   return(chartRln)
+}
+
+
+##Find and removing white space
+findWS<-function(data=NULL){
+  tmp<-sapply(data,function(x){strsplit(x,";")}) %>%
+    lapply(function(x){
+      trailing<-grepl("\\s+$",x) %>% as.numeric() %>% sum()
+      leading<-grepl("^\\s+",x) %>% as.numeric() %>% sum()
+      trailing + leading
+    }) %>%
+    unlist()
+  
+  return(tmp)
 }
