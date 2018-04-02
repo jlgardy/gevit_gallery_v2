@@ -16,30 +16,6 @@ pad.Vector <- function(x) {
   
 }
 
-## Function from Joe Cheng
-## https://gist.github.com/jcheng5/5913297
-helpPopup <- function(title, content,
-                      placement = c('right', 'top', 'left', 'bottom'),
-                      trigger = c('click', 'hover', 'focus', 'manual')) {
-  tagList(
-    singleton(
-      tags$head(
-        tags$script("$(function() { $(\"[data-toggle='popover']\").popover()})"),
-        tags$style(type = "text/css", ".popover{max-width:500px; position: fixed;color:black;}")
-      )
-    ),
-    tags$a(
-      href = "#", class = "btn btn-link",
-      `data-toggle` = "popover", `data-html` = "true",
-      title = title, `data-content` = content, `data-animation` = TRUE,
-      `data-placement` = match.arg(placement, several.ok = TRUE)[1],
-      `data-trigger` = match.arg(trigger, several.ok = TRUE)[1],
-      icon("info-circle", class = NULL, lib = "font-awesome")
-    )
-  )
-}
-
-
 
 
 #Parse the marks (re-ecndoed and added)

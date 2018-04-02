@@ -1,9 +1,9 @@
-library(tesseract)
-library(tidytext)
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(qdapDictionaries)
+#library(tesseract)
+#library(tidytext)
+#library(dplyr)
+#library(tidyr)
+#library(stringr)
+#library(qdapDictionaries)
 
 imgFiles<-list.files("../gevitTextmining/figureAnalysisShiny/www/figures/",pattern=".jpg",full.names=TRUE)
 

@@ -1,11 +1,31 @@
 library(shinydashboard)
 library(shinyWidgets)
-library(shinyjs)
-library(shinycssloaders)
 
 source("extras/utilityFunctions.R")
 
 
+## Function from Joe Cheng
+## https://gist.github.com/jcheng5/5913297
+helpPopup <- function(title, content,
+                      placement = c('right', 'top', 'left', 'bottom'),
+                      trigger = c('click', 'hover', 'focus', 'manual')) {
+  tagList(
+    singleton(
+      tags$head(
+        tags$script("$(function() { $(\"[data-toggle='popover']\").popover()})"),
+        tags$style(type = "text/css", ".popover{max-width:500px; position: fixed;color:black;}")
+      )
+    ),
+    tags$a(
+      href = "#", class = "btn btn-link",
+      `data-toggle` = "popover", `data-html` = "true",
+      title = title, `data-content` = content, `data-animation` = TRUE,
+      `data-placement` = match.arg(placement, several.ok = TRUE)[1],
+      `data-trigger` = match.arg(trigger, several.ok = TRUE)[1],
+      icon("info-circle", class = NULL, lib = "font-awesome")
+    )
+  )
+}
 #-------------------------------------------------------------------------
 # BODY
 #-------------------------------------------------------------------------
@@ -13,10 +33,10 @@ body<-dashboardBody(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/app.css"),
     tags$link(rel="stylesheet",href="https://use.fontawesome.com/releases/v5.0.9/css/all.css", integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1", crossorigin="anonymous"),
-    tags$head(tags$script(src = "http://www.elevateweb.co.uk/wp-content/themes/radial/jquery.elevatezoom.min.js")),
-    tags$script(src="js/app.js")
+    #tags$head(tags$script(src = "http://www.elevateweb.co.uk/wp-content/themes/radial/jquery.elevatezoom.min.js")),
+    tags$script(src="js/app.js"),
+    tags$script(src="js/elevatezoom.min.js")
   ),
-  useShinyjs(),
   tabsetPanel(
     tabPanel("Catalogue",
              div(style="display: inline-block;vertical-align:middle; width: 400px;",HTML("<strong>Only show images with the following tags (select to activate):</strong>")),
