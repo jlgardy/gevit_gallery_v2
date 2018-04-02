@@ -1,1 +1,1 @@
-This is a test explainer with random content.
+You can zoom in on the image by turning once you've activated zooming (switch on the right is red). To change the size of the lens used a mouse scroll (on most touch pads, this is scrolling up and down using two fingers), and move the box around with your mouse (on most touch pads, this means just using one finger).

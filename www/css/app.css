@@ -108,3 +108,9 @@ h4 {
 /* Vertical scroll bar */
 .body { height: 90vh; overflow-y: auto; }
 
+.btn-primary {
+    background: #fff;
+    border: 2px solid #686868;
+	  color: #686868;
+}
+

@@ -13,13 +13,18 @@ source("extras/utilityFunctions.R")
 # PREP
 
 #Prep Images
-imgs<-list.files(path="www/images/")
+#imgs<-list.files(path="www/images/")
 
 #Prep Data
 dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
+
+allIMG<-readRDS(file="data/allIMG.RDS") #temporary till I track down some missing files
+
+
 datSub<-dat %>%
-  filter(figID_initial %in% imgs)%>%
+  filter(figID_initial %in% allIMG)%>%
   filter(!(specialChartType %in% c("INCOMPLETE","MISSING"))) %>%
+  filter(!(chartCombinations) == "Simple -BREAK THIS UP")%>%
   filter(!grepl("CONSIDER REMOVING",specialChartType))
 
 chartRln<-getChartRln(datSub)
@@ -56,7 +61,8 @@ filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
 #------------------
 # SERVER CODE
 shinyServer(function(input, output,session) {
- 
+  session$onSessionEnded(stopApp)
+  
   #reactive dataset
   datasetInput <- reactive({
     
@@ -79,10 +85,12 @@ shinyServer(function(input, output,session) {
               filtData(tmpDat,"Pathogen",input$pathogenSelect)$figID_initial,
               filtData(tmpDat,"concepts",input$conceptSelect)$figID_initial,
               filtData(tmpDat,"addedMarks",input$addMarksSelect)$figID_initial,
-              filtData(tmpDat,"reencodedMarks",input$rencodeMarksSelect)$figID_initial)
+              filtData(tmpDat,"reencodedMarks",input$rencodeMarksSelect)$figID_initial,
+              filtData(tmpDat,"classExample",input$tagSelect)$figID_initial,
+              filtData(tmpDat,"PMID",input$paperSelect)$figID_initial)
     
     tmp<-table(filtID)
-    tmp<-tmp[tmp==6]
+    tmp<-tmp[tmp==8]
     
     if(length(tmp)==0){
       empty_figs <- "There are no visualizations that match your filtering criteria."
@@ -93,15 +101,19 @@ shinyServer(function(input, output,session) {
     
     #Banner above image to indicate if it is good practice or not
     #currently just a random indicator
-    supportingText<-sapply(runif(nrow(tmp)),function(x){
-      if(x>0.8){
-        return('<p class="special-content">Good Practice</p>')
+    supportingText<-sapply(tmp$classExample,function(x){
+      if(!is.na(x)){
+        if(x=="Good Practice"){
+          return('<p class="special-content">Good Practice</p>')
+        }else{
+          return('<p class="regular-content">Mistakes were made</p>')
+        }
       }else{
         return('<p class="regular-content">Mistakes were made</p>')
       }
     })
     
-    imgTxt<-paste0(supportingText,'<img class="chart" src="imagesSmaller/',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
+    imgTxt<-paste0(supportingText,'<img class="chart" src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
     imgTxtPadded<-pad.Vector(imgTxt)
     
     #adding some labels
@@ -132,14 +144,18 @@ shinyServer(function(input, output,session) {
   #-----------------------------------------------
   # Reactive Functions
   #-----------------------------------------------
-  output$figImage_only <- renderImage({
+  #output$figImage_only <- renderImage({
 
-  filename <- normalizePath(file.path('www/images/',paste0(values$code)))
-
-    list(src = filename,
-         width = "auto",
-         height = 500)
-  }, deleteFile = FALSE)
+  #  filename <- paste0('https://s3.ca-central-1.amazonaws.com/gevit-proj/images/',values$code)
+    
+  #  list(src = filename,
+  #       width = "auto",
+  #       height = 500)
+  #})
+  
+  output$figImage_only = renderUI({
+    tags$img(src = paste0('https://s3.ca-central-1.amazonaws.com/gevit-proj/images/',values$code))  
+  })
 
   #-----------------------------------------------
   # Reactive Functions
@@ -174,6 +190,15 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage(type = 'removeZoom',message=list())
     }
 
+  })
+  
+  
+  observeEvent(input$paperChoice,{
+    if(!is.null(values$code)){
+      tmp<-filter(datSub,figID_initial == values$code)
+      updateSelectInput(session,"paperSelect",selected=unique(tmp$PMID))
+      updateTabsetPanel(session,"opsPanel",selected = "Catalogue")
+    }
   })
   
   #-----------------------------------------------
@@ -256,6 +281,32 @@ shinyServer(function(input, output,session) {
                 multiple=TRUE)
   })
   
+  
+  #Widget : Show only
+  output$tagUI<-renderUI({
+    classTags<-unique(datSub$classExample)
+    
+    checkboxGroupButtons(
+      inputId = "tagSelect", 
+      label = NULL, 
+      choices = setdiff(classTags,NA), 
+      justified = FALSE, 
+      individual = TRUE,
+      status = "primary",
+      checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = NULL)
+    )
+  })
+  
+  output$paperLookupUI<-renderUI({
+    PMIDUnique<-unique((datSub$PMID))
+    selectInput(
+      "paperSelect",
+      label="Paper Lookup (PMID):",
+      choices =PMIDUnique,
+      selected=NULL,
+      multiple = TRUE
+    )
+  })
   #-----------------------------------------------
   # SUMMARIES
   #-----------------------------------------------
@@ -277,7 +328,7 @@ shinyServer(function(input, output,session) {
       NULL
     } else {
       tmp<-filter(datSub,figID_initial == values$code)
-  
+      #browser()
       #chart types
       chartType<-unlist(strsplit(tmp$chartType,";"))
       specialChartType<-unlist(strsplit(tmp$specialChartType,";"))

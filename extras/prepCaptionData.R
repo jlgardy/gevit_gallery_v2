@@ -53,3 +53,9 @@ save(usefulBigrams,usefulSingles,commonWords,
      list = c("usefulBigrams","usefulSingles","commonWords"),
      file="data/captionItems.RData")
 
+#get a list of some of the missing figures
+dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
+
+#missing figures
+allImgs<-list.files(path = "../gevitTextmining/figureAnalysisShiny/www/figures/")
+

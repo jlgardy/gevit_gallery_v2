@@ -46,21 +46,21 @@ helpPopup <- function(title, content,
 parseMarkText<-function(A=NULL){
   #extract whole substrates
   marksWithChannel<-unlist(str_extract_all(A,"[a-z]+\\[[a-z;\\s]+\\]"))
-  marksWithNoChannel<-gsub("[a-z]+\\[[a-z;\\s]+\\]","",A)
+  marksWithNoChannel<-gsub("[a-z]+\\[[a-z\\s]+\\]","",A,perl = T)
   
   #deal with channeless marks first
   marksWithNoChannel<-setdiff(unlist(strsplit(marksWithNoChannel,";")),"")
   marksWithNoChannel<-cbind(marksWithNoChannel,rep(NA,length(marksWithNoChannel)))
   
-  channelInfo<-gsub("\\[|\\]","",unlist(str_extract_all(marksWithChannel,"\\[[a-z;]+\\]")))
+  channelInfo<-gsub("\\[|\\]","",unlist(str_extract_all(marksWithChannel,"\\[[a-z;\\s]+\\]")),perl=T)
   
   #Extracting 
-  tmp<-gsub("\\[([a-z;]+)\\]","",marksWithChannel,perl=T)
-  tmp<-gsub("\\([a-z]+\\)","",tmp,perl=T)
-  tmp<-gsub("\\[pie chart\\[[a-z]+\\]\\]","",tmp,perl=T) #the one edge case of this
-  tmp<-gsub("\\[pie chart\\]","",tmp,perl=T) #the one edge case of this
+  tmp2<-gsub("\\[([a-z;]+)\\]","",marksWithChannel,perl=T)
+  tmp2<-gsub("\\([a-z]+\\)","",tmp2,perl=T)
+  tmp2<-gsub("\\[pie chart\\[[a-z]+\\]\\]","",tmp2,perl=T) #the one edge case of this
+  tmp2<-gsub("\\[pie chart\\]","",tmp2,perl=T) #the one edge case of this
   
-  markInfo<-unlist(strsplit(tmp,";"))
+  markInfo<-unlist(strsplit(tmp2,";"))
   marksWithChannel<-cbind(markInfo,channelInfo)
   
   

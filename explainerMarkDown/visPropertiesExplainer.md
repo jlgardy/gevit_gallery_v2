@@ -1,0 +1,1 @@
+Look up visualizations according to the ways that there constructed. This is by, the type of charts in the visualization, whether the visualization is combined with the other charts (chart combinations), and whether the visualization is enhanced with additional data (chart enhancements)

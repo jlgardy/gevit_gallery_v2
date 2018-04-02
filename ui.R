@@ -1,6 +1,7 @@
 library(shinydashboard)
 library(shinyWidgets)
 library(shinyjs)
+library(shinycssloaders)
 
 source("extras/utilityFunctions.R")
 
@@ -18,11 +19,18 @@ body<-dashboardBody(
   useShinyjs(),
   tabsetPanel(
     tabPanel("Catalogue",
+             div(style="display: inline-block;vertical-align:middle; width: 400px;",HTML("<strong>Only show images with the following tags (select to activate):</strong>")),
+             div(style="display: inline-block;vertical-align:middle; width: 450px;",uiOutput("tagUI")),
+             #uiOutput("tagUI"),
+             br(),
+             br(),
              tableOutput("imageGrid")
     ),
     tabPanel("Figure",
              hr(),
              uiOutput("imageInfo"),
+             actionButton("paperChoice","Look-up other figures from this paper"),
+             br(),
              hr(),
              fluidRow(
                column(width=7,
@@ -34,8 +42,7 @@ body<-dashboardBody(
                                column(width = 11, 
                                       materialSwitch(inputId = "enableZoom", label = "Enable Image Zoom", status = "danger"))
                                ),
-                      
-                      imageOutput("figImage_only")
+                      uiOutput("figImage_only")
                       ),
                column(width=5,
                       h3("GEViT Breakdown"),
@@ -55,10 +62,12 @@ sideDash<-dashboardSidebar(
   br(),
   HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. To get more ifnromation about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
   hr(),
+  uiOutput("paperLookupUI"),
+  hr(),
   fluidRow(column(width = 10, h4("Visualization Context")),
   column(width = 2,tags$div(id = "popup",
            helpPopup(strong("Visualization Context Info"),
-                     includeMarkdown("explainerMarkDown/testExplainer.md"),
+                     includeMarkdown("explainerMarkDown/visContextExplainer.md"),
                      placement = "right", trigger = "click")))),
   uiOutput("pathogenUI"),
   uiOutput("conceptUI"),
@@ -67,7 +76,7 @@ sideDash<-dashboardSidebar(
   fluidRow(column(width = 10, h4("Visualization Graphical Properties")),
            column(width = 2,tags$div(id = "popup",
                                      helpPopup(strong("Visualization Graphical Properties"),
-                                               includeMarkdown("explainerMarkDown/testExplainer.md"),
+                                               includeMarkdown("explainerMarkDown/visPropertiesExplainer.md"),
                                                placement = "right", trigger = "click")))),
   uiOutput("chartTypeUI"),
   uiOutput("specialChartTypeUI"),
@@ -78,10 +87,7 @@ sideDash<-dashboardSidebar(
   HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
   materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
   br(),
-  materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE),
-  
-  hr(),
-  h4("Paper Look-up")
+  materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE)
 )
 
 #-------------------------------------------------------------------------
