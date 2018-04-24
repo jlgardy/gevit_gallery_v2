@@ -80,7 +80,9 @@ body<-dashboardBody(
 sideDash<-dashboardSidebar(
   width="300px",
   br(),
-  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. To get more ifnromation about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
+  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. To get more information about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
+  hr(),
+  uiOutput("numFigBox"),
   hr(),
   uiOutput("paperLookupUI"),
   hr(),

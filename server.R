@@ -18,15 +18,15 @@ source("extras/utilityFunctions.R")
 
 #Prep Data
 dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
-
-allIMG<-readRDS(file="data/allIMG.RDS") #temporary till I track down some missing files
-
+#allIMG<-readRDS(file="data/allIMG.RDS") #temporary till I track down some missing files
 
 datSub<-dat %>%
-  filter(figID_initial %in% allIMG)%>%
-  filter(!(specialChartType %in% c("INCOMPLETE","MISSING"))) %>%
-  filter(!(chartCombinations) == "Simple -BREAK THIS UP")%>%
-  filter(!grepl("CONSIDER REMOVING",specialChartType))
+  #filter(figID_initial %in% allIMG)%>%
+  filter(!(chartCombinations) %in% c("BREAK THIS UP","MISSING","EXCLUDE - LEGIT TABLE"))%>%
+  mutate(figID_initial = gsub("\\s+","_",figID_initial)) #to match AWS
+  #filter(!(specialChartType %in% c("INCOMPLETE","MISSING"))) %>%
+  #filter(!(chartCombinations) == "Simple - BREAK THIS UP")%>%
+  #filter(!grepl("CONSIDER REMOVING",specialChartType))
 
 chartRln<-getChartRln(datSub)
 paperData<-read_excel("data/MasterDocumentList.xlsx") %>% filter(Include == "Y")
@@ -79,6 +79,7 @@ shinyServer(function(input, output,session) {
       empty_figs <- "There are no visualizations that match your filtering criteria."
       return(matrix(empty_figs, nrow = 1, ncol = 1)) # return empty matrix to avoid console warning
     }
+    #browser()
     
     #filter dataset - images MUST have these items to be included
     filtID<-c(filtData(tmpDat,"chartCombinations",input$chartCombo)$figID_initial,
@@ -89,6 +90,8 @@ shinyServer(function(input, output,session) {
               filtData(tmpDat,"reencodedMarks",input$rencodeMarksSelect)$figID_initial,
               filtData(tmpDat,"classExample",input$tagSelect)$figID_initial,
               filtData(tmpDat,"PMID",input$paperSelect)$figID_initial)
+    
+    
     
     tmp<-table(filtID)
     tmp<-tmp[tmp==8]
@@ -105,16 +108,20 @@ shinyServer(function(input, output,session) {
     supportingText<-sapply(tmp$classExample,function(x){
       if(!is.na(x)){
         if(x=="Good Practice"){
-          return('<p class="special-content">Good Practice</p>')
+          return('<p class="special-content-good">Good Practice</p>')
+        }else if (x=="Missed Opportunity"){
+          return('<p class="special-content-missed">Missed Oppertunity</p>')
         }else{
-          return('<p class="regular-content">Mistakes were made</p>')
+          return('<p class="regular-content">No Status Assigned</p>')
         }
       }else{
-        return('<p class="regular-content">Mistakes were made</p>')
+        return(paste0('<p class="regular-content"','" id="',tmp$figID_initial,'">No Status Assigned</p>'))
       }
     })
     
-    imgTxt<-paste0(supportingText,'<img class="chart" src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
+    #imgTxt<-paste0(supportingText,'<img class="chart" src="../gevitTextmining/figureAnalysisShiny/www/figures/"',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
+    
+    imgTxt<-paste0(supportingText,'<img class="chart" src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '" alt="',tmp$figID_initial,'" data-code="', tmp$figID_initial,'" data-zoom-image="', tmp$figID_initial, ',"></img>')
     imgTxtPadded<-pad.Vector(imgTxt)
     
     #adding some labels
@@ -178,6 +185,7 @@ shinyServer(function(input, output,session) {
      
       # Add figure name to URL so it can be retrieved later
       session$sendCustomMessage("figClick", values$code)
+      
       updateTabsetPanel(session, "opsPanel", selected = "Figure")
       #updateMaterialSwitch(session,"enableZoom",FALSE)
     }
@@ -307,6 +315,19 @@ shinyServer(function(input, output,session) {
       selected=NULL,
       multiple = TRUE
     )
+  })
+  
+  #widget: info box showing number of figures
+  output$numFigBox<-renderUI({
+    
+    #browser()
+    totalNum<-nrow(datSub) 
+    totalShown<-nrow(datasetInput()) * ncol(datasetInput())
+    
+    valueBox(value = paste0(round((totalShown/totalNum)*100),"%"),
+            subtitle  = paste(totalShown, "out of",totalNum,"figures"),
+            color = "light-blue",
+            width = 12)
   })
   #-----------------------------------------------
   # SUMMARIES

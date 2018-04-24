@@ -90,7 +90,7 @@ h4 {
     width: 100%; /* Full width */
 }
 
-.special-content{
+.special-content-good{
     height:25px;
     /*position: absolute; Position the background text*/
     /*bottom: 0;  At the bottom. Use top:0 to append it to the top */
@@ -99,6 +99,23 @@ h4 {
     background-color: rgba(196, 73, 52, 0.7); /*Black background with 0.7 opacity */
     color: #f1f1f1; /* Grey text */
     width: 100%; /* Full width */
+}
+
+.special-content-missed{
+    height:25px;
+    /*position: absolute; Position the background text*/
+    /*bottom: 0;  At the bottom. Use top:0 to append it to the top */
+    text-align:center;
+    background-color: rgb(136, 156, 255);
+    background-color: rgba(136, 156, 255, 0.7); /*Black background with 0.7 opacity */
+    color: #f1f1f1; /* Grey text */
+    width: 100%; /* Full width */
+}
+
+
+.small-box>.inner {
+    padding: 2px;
+    height: 75px;
 }
 
 .table-bordered>tbody>tr>td, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>td, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>thead>tr>th{
