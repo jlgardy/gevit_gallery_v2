@@ -6,7 +6,7 @@ $(function() {
       Shiny.onInputChange("clicked", true);
       Shiny.onInputChange('code', $(this).children('img.chart').data('code'));
       
-      $(window).scrollTop(0);
+      Shiny.onInputChange('scrollPos',$(window).scrollTop());
     }
   });
   // Reset click input value when user changes tab.
@@ -25,10 +25,21 @@ $(function() {
 });
 
 
+
 // When a figure is clicked, add it to the URL hash so it can be retrieved
 Shiny.addCustomMessageHandler("figClick", function(data) {
   window.location.hash = data;
 });
+
+Shiny.addCustomMessageHandler("scrollCallback",
+        function(data) {
+          //var scrollPos = $("#imageGrid tr:last").position().top
+          //var objDiv = document.getElementById("#" + data);
+          //objDiv.scrollTop = objDiv.scrollHeight;
+          $(window).scrollTop(data);
+          //$(window).scrollTop("#imageGrid tr:last");
+        }
+);
 
 
 //Elevate Zoom Set Interactions

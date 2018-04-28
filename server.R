@@ -105,7 +105,10 @@ shinyServer(function(input, output,session) {
     
     #Banner above image to indicate if it is good practice or not
     #currently just a random indicator
-    supportingText<-sapply(tmp$classExample,function(x){
+    supportingText<-apply(tmp[,c("figID_initial","classExample")],1,function(val){
+      y<-val[1]
+      x<-val[2]
+      
       if(!is.na(x)){
         if(x=="Good Practice"){
           return('<p class="special-content-good">Good Practice</p>')
@@ -115,13 +118,14 @@ shinyServer(function(input, output,session) {
           return('<p class="regular-content">No Status Assigned</p>')
         }
       }else{
-        return(paste0('<p class="regular-content"','" id="',tmp$figID_initial,'">No Status Assigned</p>'))
+        return(paste0('<p class="regular-content"','" id="',y,'">No Status Assigned</p>'))
       }
     })
     
     #imgTxt<-paste0(supportingText,'<img class="chart" src="../gevitTextmining/figureAnalysisShiny/www/figures/"',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
     
     imgTxt<-paste0(supportingText,'<img class="chart" src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '" alt="',tmp$figID_initial,'" data-code="', tmp$figID_initial,'" data-zoom-image="', tmp$figID_initial, ',"></img>')
+    
     imgTxtPadded<-pad.Vector(imgTxt)
     
     #adding some labels
@@ -145,7 +149,8 @@ shinyServer(function(input, output,session) {
   #reactive values
   values <- reactiveValues(
     clicked = FALSE,
-    code = NULL
+    code = NULL,
+    scrollPos = NULL
   )
   
   
@@ -182,7 +187,8 @@ shinyServer(function(input, output,session) {
     if (!is.null(input$clicked) && input$clicked == TRUE) {
   
       values$code <- input$code
-     
+      values$scrollPos<-input$scrollPos
+      
       # Add figure name to URL so it can be retrieved later
       session$sendCustomMessage("figClick", values$code)
       
@@ -199,6 +205,12 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage(type = 'removeZoom',message=list())
     }
 
+  })
+  
+  observeEvent(input$opsPanel == "catalogue",{
+    if(!(is.null(values$scrollPos))){
+      session$sendCustomMessage("scrollCallback",values$scrollPos)
+    }
   })
   
   
