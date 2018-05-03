@@ -1,8 +1,6 @@
 library(shiny)
 library(readxl)
 library(markdown)
-#library(tesseract)
-#library(tidytext)
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -12,29 +10,25 @@ source("extras/utilityFunctions.R")
 
 #------------------
 # PREP
+# 
+# #Prep Data
+# dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
+# 
+# datSub<-dat %>%
+#   filter(!(chartCombinations) %in% c("BREAK THIS UP","MISSING","EXCLUDE - LEGIT TABLE"))%>%
+#   mutate(figID_initial = gsub("\\s+","_",figID_initial))
+# 
+# chartRln<-getChartRln(datSub)
+# paperData<-read_excel("data/MasterDocumentList.xlsx") %>% filter(Include == "Y")
+# 
+# datSub<-inner_join(datSub,paperData,by="PMID")
+# 
+# load("data/captionItems.RData")
+# commonWords<- inner_join(commonWords,select(datSub,figID_initial), by="figID_initial")
+# 
+# save(datSub,commonWords,chartRln,usefulBigrams,usefulSingles,file="data/analysisData.RData")
+load("data/analysisData.RData")
 
-#Prep Images
-#imgs<-list.files(path="www/images/")
-
-#Prep Data
-dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
-#allIMG<-readRDS(file="data/allIMG.RDS") #temporary till I track down some missing files
-
-datSub<-dat %>%
-  #filter(figID_initial %in% allIMG)%>%
-  filter(!(chartCombinations) %in% c("BREAK THIS UP","MISSING","EXCLUDE - LEGIT TABLE"))%>%
-  mutate(figID_initial = gsub("\\s+","_",figID_initial)) #to match AWS
-  #filter(!(specialChartType %in% c("INCOMPLETE","MISSING"))) %>%
-  #filter(!(chartCombinations) == "Simple - BREAK THIS UP")%>%
-  #filter(!grepl("CONSIDER REMOVING",specialChartType))
-
-chartRln<-getChartRln(datSub)
-paperData<-read_excel("data/MasterDocumentList.xlsx") %>% filter(Include == "Y")
-
-datSub<-inner_join(datSub,paperData,by="PMID")
-
-load("data/captionItems.RData")
-commonWords<- inner_join(commonWords,select(datSub,figID_initial), by="figID_initial")
 
 #function to filter data are return ID
 filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
@@ -59,14 +53,20 @@ filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
   }
 }
 
+flushAction<-function(session=NULL){
+  session = getDefaultReactiveDomain()
+  session$sendCustomMessage("lazyLoadUpdate",message=list())
+}
+
 #------------------
 # SERVER CODE
 shinyServer(function(input, output,session) {
   session$onSessionEnded(stopApp)
+  session$onFlushed(flushAction,once=FALSE)
+  #session$sendCustomMessage("lazyLoadInit",message=list())
   
   #reactive dataset
   datasetInput <- reactive({
-    
     #browser()
     #filter initially on figure caption content (if any is supplied)
     tmpDat<-datSub
@@ -84,6 +84,7 @@ shinyServer(function(input, output,session) {
     #filter dataset - images MUST have these items to be included
     filtID<-c(filtData(tmpDat,"chartCombinations",input$chartCombo)$figID_initial,
               filtData(tmpDat,"chartType",input$chartType)$figID_initial,
+              filtData(tmpDat,"specialChartType",input$specialChartType)$figID_initial,
               filtData(tmpDat,"Pathogen",input$pathogenSelect)$figID_initial,
               filtData(tmpDat,"concepts",input$conceptSelect)$figID_initial,
               filtData(tmpDat,"addedMarks",input$addMarksSelect)$figID_initial,
@@ -92,9 +93,8 @@ shinyServer(function(input, output,session) {
               filtData(tmpDat,"PMID",input$paperSelect)$figID_initial)
     
     
-    
     tmp<-table(filtID)
-    tmp<-tmp[tmp==8]
+    tmp<-tmp[tmp==9]
     
     if(length(tmp)==0){
       empty_figs <- "There are no visualizations that match your filtering criteria."
@@ -122,19 +122,21 @@ shinyServer(function(input, output,session) {
       }
     })
     
-    #imgTxt<-paste0(supportingText,'<img class="chart" src="../gevitTextmining/figureAnalysisShiny/www/figures/"',tmp$figID_initial, '"data-code="', tmp$figID_initial,'"data-zoom-image="', tmp$figID_initial, ',"></img>')
+    #Note to self: using data-src instead of src because of the lazy load plugin
+  imgTxt<-paste0(supportingText,'<img class="chart" data-src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '" alt="',tmp$figID_initial,'" data-code="', tmp$figID_initial,'" data-zoom-image="', tmp$figID_initial, ',"></img>')
     
-    imgTxt<-paste0(supportingText,'<img class="chart" src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '" alt="',tmp$figID_initial,'" data-code="', tmp$figID_initial,'" data-zoom-image="', tmp$figID_initial, ',"></img>')
-    
+    values$dataSize = length(imgTxt)
     imgTxtPadded<-pad.Vector(imgTxt)
     
     #adding some labels
     if(length(imgTxtPadded)/3 > 0) {
-      matrix(imgTxtPadded, ncol = 3, nrow = (length(imgTxtPadded)/3), byrow = TRUE)
+      imgTxtPadded<-matrix(imgTxtPadded, ncol = 3, nrow = (length(imgTxtPadded)/3), byrow = TRUE)
     } else {
       empty_figs <- "There are no graphs that match the selected criteria."
-      matrix(empty_figs, nrow = 1, ncol = 1) # return empty matrix to avoid console warning
+      imgTxtPadded<-matrix(empty_figs, nrow = 1, ncol = 1) # return empty matrix to avoid console warning
     }
+    
+    imgTxtPadded
     
   })
   
@@ -150,22 +152,15 @@ shinyServer(function(input, output,session) {
   values <- reactiveValues(
     clicked = FALSE,
     code = NULL,
-    scrollPos = NULL
+    scrollPos = NULL,
+    dataSize = NULL
   )
   
   
   #-----------------------------------------------
   # Reactive Functions
   #-----------------------------------------------
-  #output$figImage_only <- renderImage({
 
-  #  filename <- paste0('https://s3.ca-central-1.amazonaws.com/gevit-proj/images/',values$code)
-    
-  #  list(src = filename,
-  #       width = "auto",
-  #       height = 500)
-  #})
-  
   output$figImage_only = renderUI({
     tags$img(src = paste0('https://s3.ca-central-1.amazonaws.com/gevit-proj/images/',values$code))  
   })
@@ -193,7 +188,7 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage("figClick", values$code)
       
       updateTabsetPanel(session, "opsPanel", selected = "Figure")
-      #updateMaterialSwitch(session,"enableZoom",FALSE)
+      updateMaterialSwitch(session,"enableZoom",FALSE)
     }
   })
   
@@ -212,6 +207,20 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage("scrollCallback",values$scrollPos)
     }
   })
+  
+ # observeEvent(values$dataSize,{
+#    print("HERE")
+#    session$sendCustomMessage("lazyLoadInit",message=list())
+#  })
+  # observe(
+  #   if(input$opsPanel == "catalogue"){
+  #     if(!(is.null(values$scrollPos))){
+  #       session$sendCustomMessage("scrollCallback",values$scrollPos)
+  #     }
+  #   }else{
+  #     session$sendCustomMessage("scrollCallback",0)
+  #   }
+  # )
   
   
   observeEvent(input$paperChoice,{
@@ -334,7 +343,8 @@ shinyServer(function(input, output,session) {
     
     #browser()
     totalNum<-nrow(datSub) 
-    totalShown<-nrow(datasetInput()) * ncol(datasetInput())
+    #totalShown<-nrow(datasetInput()) * ncol(datasetInput())
+    totalShown<-sum(!is.na(datasetInput()))
     
     valueBox(value = paste0(round((totalShown/totalNum)*100),"%"),
             subtitle  = paste(totalShown, "out of",totalNum,"figures"),

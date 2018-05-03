@@ -33,9 +33,9 @@ body<-dashboardBody(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/app.css"),
     tags$link(rel="stylesheet",href="https://use.fontawesome.com/releases/v5.0.9/css/all.css", integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1", crossorigin="anonymous"),
-    #tags$head(tags$script(src = "http://www.elevateweb.co.uk/wp-content/themes/radial/jquery.elevatezoom.min.js")),
     tags$script(src="js/app.js"),
-    tags$script(src="js/elevatezoom.min.js")
+    tags$script(src="js/elevatezoom.min.js"),
+    includeScript("https://cdnjs.cloudflare.com/ajax/libs/vanilla-lazyload/8.7.1/lazyload.min.js")
   ),
   tabsetPanel(
     tabPanel("Catalogue",

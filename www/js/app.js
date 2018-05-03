@@ -1,3 +1,4 @@
+// some jQuery code
 $(function() {
   // Attach click handler to all images that have class 'chart'
   $('body').on('click', '#imageGrid td', function() {
@@ -25,21 +26,29 @@ $(function() {
 });
 
 
-
 // When a figure is clicked, add it to the URL hash so it can be retrieved
 Shiny.addCustomMessageHandler("figClick", function(data) {
   window.location.hash = data;
 });
 
+
+//scroll catalogue window to position of last fig item that was clicked on
 Shiny.addCustomMessageHandler("scrollCallback",
-        function(data) {
-          //var scrollPos = $("#imageGrid tr:last").position().top
-          //var objDiv = document.getElementById("#" + data);
-          //objDiv.scrollTop = objDiv.scrollHeight;
-          $(window).scrollTop(data);
-          //$(window).scrollTop("#imageGrid tr:last");
+        function(scrollPos) {
+          $(window).scrollTop(scrollPos);
         }
 );
+
+//create a new lazy load instance
+$(function(){
+  ll = new LazyLoad();
+});
+
+//update the lazy load instance as data filters
+Shiny.addCustomMessageHandler("lazyLoadUpdate",
+  function(message){
+    ll.update();
+});
 
 
 //Elevate Zoom Set Interactions
@@ -48,7 +57,7 @@ Shiny.addCustomMessageHandler("createZoom",
     $("#figImage_only img").elevateZoom({scrollZoom : true,tint:true, tintColour:'#F90', tintOpacity:0.5});
 });
 
-// Critically : when user selects another image, remove previous image from container
+// Critical : when user selects another image, remove previous image from container
 // otherwise, the image hangs around like some ghost of images past
 Shiny.addCustomMessageHandler("removeZoom",
   function(message){

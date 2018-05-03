@@ -3,9 +3,9 @@ title: gevit_gallery
 account: amcrisan
 server: shinyapps.io
 appId: 313407
-bundleId: 1297460
+bundleId: 1345148
 url: https://amcrisan.shinyapps.io/gevit_gallery/
-when: 1522646727.17507
+when: 1524960894.54633
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: data/imgCaptionTextRaw_df.RDS|data/imgCaptionTextRaw.RDS|extras/prepCaptionData.R|www/.DS_Store
