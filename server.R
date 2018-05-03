@@ -194,6 +194,7 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage("figClick", values$code)
       
       updateTabsetPanel(session, "opsPanel", selected = "Figure")
+      session$sendCustomMessage("scrollCallback",0)
       updateMaterialSwitch(session,"enableZoom",FALSE)
     }
   })
@@ -213,20 +214,6 @@ shinyServer(function(input, output,session) {
       session$sendCustomMessage("scrollCallback",values$scrollPos)
     }
   })
-  
-  
-  observe(
-    if(input$opsPanel == "catalogue"){
-      if(!(is.null(values$scrollPos))){
-        session$sendCustomMessage("scrollCallback",values$scrollPos)
-      }else{
-        session$sendCustomMessage("scrollCallback",0)
-      }
-    }else{
-      session$sendCustomMessage("scrollCallback",0)
-    }
-  )
-  
   
   observeEvent(input$paperChoice,{
     if(!is.null(values$code)){
