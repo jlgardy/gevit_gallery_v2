@@ -30,6 +30,9 @@ source("extras/utilityFunctions.R")
 load("data/analysisData.RData")
 
 
+#-----------------------------------------------
+# Server Functions
+
 #function to filter data are return ID
 filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
   if(!is.null(filtOpts)){
@@ -53,18 +56,22 @@ filtData<-function(dat=NULL,colFilt=NULL,filtOpts=NULL){
   }
 }
 
-flushAction<-function(session=NULL){
-  session = getDefaultReactiveDomain()
-  session$sendCustomMessage("lazyLoadUpdate",message=list())
+
+#update the lazy load instance
+updateFlushAction<-function(session=NULL){
+  session = getDefaultReactiveDomain() #getting the session info
+  session$sendCustomMessage("lazyLoadUpdate",message=list()) 
 }
 
 #------------------
 # SERVER CODE
 shinyServer(function(input, output,session) {
   session$onSessionEnded(stopApp)
-  session$onFlushed(flushAction,once=FALSE)
-  #session$sendCustomMessage("lazyLoadInit",message=list())
+  session$onFlushed(updateFlushAction,once=FALSE) #update the lazy load instance after session flushed
   
+  #-----------------------------------------------
+  # Reactive Data
+  #-----------------------------------------------
   #reactive dataset
   datasetInput <- reactive({
     #browser()
@@ -125,7 +132,6 @@ shinyServer(function(input, output,session) {
     #Note to self: using data-src instead of src because of the lazy load plugin
   imgTxt<-paste0(supportingText,'<img class="chart" data-src="https://s3.ca-central-1.amazonaws.com/gevit-proj/imagesSmaller/',tmp$figID_initial, '" alt="',tmp$figID_initial,'" data-code="', tmp$figID_initial,'" data-zoom-image="', tmp$figID_initial, ',"></img>')
     
-    values$dataSize = length(imgTxt)
     imgTxtPadded<-pad.Vector(imgTxt)
     
     #adding some labels
@@ -140,6 +146,19 @@ shinyServer(function(input, output,session) {
     
   })
   
+  
+  #reactive values
+  values <- reactiveValues(
+    clicked = FALSE,
+    code = NULL,
+    scrollPos = NULL
+  )
+  
+  
+  #-----------------------------------------------
+  # Main Gallery Elements
+  #-----------------------------------------------
+  
   #Outputting Gallery of Images
   output$imageGrid <- renderTable({
     datasetInput()
@@ -147,19 +166,6 @@ shinyServer(function(input, output,session) {
   include.colnames = FALSE, 
   include.rownames = FALSE,
   bordered=TRUE)
-  
-  #reactive values
-  values <- reactiveValues(
-    clicked = FALSE,
-    code = NULL,
-    scrollPos = NULL,
-    dataSize = NULL
-  )
-  
-  
-  #-----------------------------------------------
-  # Reactive Functions
-  #-----------------------------------------------
 
   output$figImage_only = renderUI({
     tags$img(src = paste0('https://s3.ca-central-1.amazonaws.com/gevit-proj/images/',values$code))  
@@ -208,19 +214,18 @@ shinyServer(function(input, output,session) {
     }
   })
   
- # observeEvent(values$dataSize,{
-#    print("HERE")
-#    session$sendCustomMessage("lazyLoadInit",message=list())
-#  })
-  # observe(
-  #   if(input$opsPanel == "catalogue"){
-  #     if(!(is.null(values$scrollPos))){
-  #       session$sendCustomMessage("scrollCallback",values$scrollPos)
-  #     }
-  #   }else{
-  #     session$sendCustomMessage("scrollCallback",0)
-  #   }
-  # )
+  
+  observe(
+    if(input$opsPanel == "catalogue"){
+      if(!(is.null(values$scrollPos))){
+        session$sendCustomMessage("scrollCallback",values$scrollPos)
+      }else{
+        session$sendCustomMessage("scrollCallback",0)
+      }
+    }else{
+      session$sendCustomMessage("scrollCallback",0)
+    }
+  )
   
   
   observeEvent(input$paperChoice,{
