@@ -1,5 +1,7 @@
 library(shinydashboard)
 library(shinyWidgets)
+library(shinycssloaders)
+library(shinyjs)
 
 source("extras/utilityFunctions.R")
 
@@ -30,6 +32,7 @@ helpPopup <- function(title, content,
 # BODY
 #-------------------------------------------------------------------------
 body<-dashboardBody(
+  useShinyjs(),
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "css/app.css"),
     tags$link(rel="stylesheet",href="https://use.fontawesome.com/releases/v5.0.9/css/all.css", integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1", crossorigin="anonymous"),
@@ -37,11 +40,14 @@ body<-dashboardBody(
     tags$script(src="js/elevatezoom.min.js"),
     includeScript("https://cdnjs.cloudflare.com/ajax/libs/vanilla-lazyload/8.7.1/lazyload.min.js")
   ),
+  #br(),
   tabsetPanel(
     tabPanel("Catalogue",
+             div(id = "grad",
+                 uiOutput("numFigBox")
+             ),
              div(style="display: inline-block;vertical-align:middle; width: 400px;",HTML("<strong>Only show images with the following tags (select to activate):</strong>")),
              div(style="display: inline-block;vertical-align:middle; width: 450px;",uiOutput("tagUI")),
-             #uiOutput("tagUI"),
              br(),
              br(),
              tableOutput("imageGrid")
@@ -66,6 +72,8 @@ body<-dashboardBody(
                       ),
                column(width=5,
                       h3("GEViT Breakdown"),
+                      uiOutput("summaryStatement"),
+                      br(),
                       tableOutput("summaryImageTable")
                     )
              )
@@ -80,36 +88,52 @@ body<-dashboardBody(
 sideDash<-dashboardSidebar(
   width="300px",
   br(),
-  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. To get more information about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
+  actionButton("disclaimerButtonToggle",label="Disclaimer (click to hide text)",class="btn-menu",width = "275px"),
+  #br(),
+  div(id = "disclaimer-text",style="padding-left:10px;padding-right:5px;",
+      HTML('<p style="color:white;font-size:14px;font-weight:300;"> The images in the GEViT gallery are presented solely for research purposes and under copyright Fair Use terms. Clicking on an image provides a link back to the original source publication. Beyond the images themselves no other materials relating to the published articles (such as PDFs of the full text) have been made available. If you are an author of a publication contained with this gallery and you would like your work to be removed please <a style="color:white;font-size:14px;font-weight:400;" href = "https://github.com/amcrisan/gevit_gallery_v2/issues">notify us.</a></p>'),
+      hr()
+  ),
+  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. Click the 'show' button to reveal the different filters. To get more information about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
   hr(),
-  uiOutput("numFigBox"),
-  hr(),
+  #uiOutput("numFigBox"),
+  #hr(),
   uiOutput("paperLookupUI"),
   hr(),
-  fluidRow(column(width = 10, h4("Visualization Context")),
-  column(width = 2,tags$div(id = "popup",
-           helpPopup(strong("Visualization Context Info"),
-                     includeMarkdown("explainerMarkDown/visContextExplainer.md"),
-                     placement = "right", trigger = "click")))),
-  uiOutput("pathogenUI"),
-  uiOutput("conceptUI"),
-  uiOutput("captionLookUp"),
+  div(style="display: inline-block;vertical-align:middle; width: 165px;",h4("Visualization Context")),
+  div(id = "popup",style="display: inline-block;vertical-align:middle; width: 60px;align:left;",
+      helpPopup(strong("Visualization Context Info"),includeMarkdown("explainerMarkDown/visContextExplainer.md"),placement = "right", trigger = "click")),
+  div(style="display: inline-block;vertical-align:middle; width: 55px;",actionButton("buttonToggle",label=" Show",class="btn-menu",width="50px",icon=icon("plus-square"))),
+  
+  
+  hidden(
+    div(id = "visContext",
+        HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by pathogen, derived paper topics, or data terms within figure captions</em></p>"),
+      uiOutput("pathogenUI"),
+      uiOutput("conceptUI"),
+      uiOutput("captionLookUp")
+    )
+  ),
   hr(),
-  fluidRow(column(width = 10, h4("Visualization Graphical Properties")),
-           column(width = 2,tags$div(id = "popup",
-                                     helpPopup(strong("Visualization Graphical Properties"),
-                                               includeMarkdown("explainerMarkDown/visPropertiesExplainer.md"),
-                                               placement = "right", trigger = "click")))),
-  uiOutput("chartTypeUI"),
-  uiOutput("specialChartTypeUI"),
-  checkboxGroupInput("chartCombo",
-                     label = "Chart Combinations",
-                     choices = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
-                     selected = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General")),
-  HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
-  materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
-  br(),
-  materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE)
+  div(style="display: inline-block;vertical-align:top; width: 164px;",h4("Visualization Graphical Properties")),
+  div(id = "popup",style="display: inline-block;vertical-align:top; width: 60px;align:left;",
+      helpPopup(strong("Visualization Context Info"),includeMarkdown("explainerMarkDown/visPropertiesExplainer.md"),placement = "right", trigger = "click")),
+  div(style="display: inline-block;vertical-align:middle; top: 55px;",actionButton("buttonToggleTwo",label=" Show",class="btn-menu",width="50px",icon=icon("plus-square"))),
+  
+  hidden(
+    div(id = "visProperties",
+      HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by chart types, chart combinations, and whether visualizations have chart elements enhanced or re-encoded</em></p>"),
+      uiOutput("chartTypeUI"),
+      uiOutput("specialChartTypeUI"),
+      checkboxGroupInput("chartCombo",
+                         label = "Chart Combinations",
+                         choices = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
+                         selected = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General")),
+      HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
+      materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
+      br(),
+      materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE)
+    ))
 )
 
 #-------------------------------------------------------------------------

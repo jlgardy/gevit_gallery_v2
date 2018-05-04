@@ -75,6 +75,7 @@ h4 {
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 10px;
+  margin-right: 0;
   color:#6FA1C4;
   font-size:16px;
 }
@@ -131,7 +132,59 @@ h4 {
 	  color: #686868;
 }
 
+.btn-menu {
+	 border-radius:6px;
+	 font-size:13px;
+	 height: 20px;
+	 line-height:20px;
+	 text-align: center;
+	 padding:0;
+	 margin:-5px;
+	 color: black;
+}
+
 img:not([src]) {
 			visibility: hidden;
+}
+
+.disclaimer-box{
+  background-color: LightCoral; 
+  border-style: solid; 
+  border-color: tomato; 
+  padding: 5px;
+  border-radius:8px;
+}
+
+
+/*customizing the value box*/
+.bg-light-blue, .label-primary, .modal-primary .modal-body{
+  background-color:#5b5f63!important;
+  border-style:solid;
+  border-width:1px;
+  border-radius:8px;
+  padding:5px;
+  border-color:white;
+}
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover{
+  border-style:solid;
+  border-width:2px;
+  background-color: #fdec96;
+  color: #454545;
+}
+
+.nav-tabs>li>a, .nav-tabs>li>a:focus, .nav-tabs>li>a:hover{
+ border-style:solid;
+ border-width:2px;
+ background-color: #dbd6d7;
+ color: #000;
+}
+
+#grad {
+  border-left-style:solid;
+  border-left-color: rgb(221, 221, 221);
+  border-left-width:2px;
+  padding-left:5px;
+  background: linear-gradient(to left, rgba(252,236,150,0), rgba(252,236,150,1));
 }
 

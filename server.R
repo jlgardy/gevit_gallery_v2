@@ -1,35 +1,18 @@
 library(shiny)
-library(readxl)
 library(markdown)
 library(dplyr)
 library(tidyr)
 library(stringr)
 
-
 source("extras/utilityFunctions.R")
 
-#------------------
-# PREP
-# 
-# #Prep Data
-# dat<-read_excel(path="data/figure_classification_final.xlsx",na=c("","NA"))
-# 
-# datSub<-dat %>%
-#   filter(!(chartCombinations) %in% c("BREAK THIS UP","MISSING","EXCLUDE - LEGIT TABLE"))%>%
-#   mutate(figID_initial = gsub("\\s+","_",figID_initial))
-# 
-# chartRln<-getChartRln(datSub)
-# paperData<-read_excel("data/MasterDocumentList.xlsx") %>% filter(Include == "Y")
-# 
-# datSub<-inner_join(datSub,paperData,by="PMID")
-# 
-# load("data/captionItems.RData")
-# commonWords<- inner_join(commonWords,select(datSub,figID_initial), by="figID_initial")
-# 
-# save(datSub,commonWords,chartRln,usefulBigrams,usefulSingles,file="data/analysisData.RData")
+
+#Load Necessary data files
 load("data/analysisData.RData")
+load("data/widgetPopulatingData.RData")
 
 
+datSub<-datSub[1:6,]
 #-----------------------------------------------
 # Server Functions
 
@@ -151,7 +134,8 @@ shinyServer(function(input, output,session) {
   values <- reactiveValues(
     clicked = FALSE,
     code = NULL,
-    scrollPos = NULL
+    scrollPos = NULL,
+    sumTable = NULL
   )
   
   
@@ -229,12 +213,12 @@ shinyServer(function(input, output,session) {
   
   # Widget : Dropdown menu for Pathogen
   output$pathogenUI<-renderUI({
-    pathogen<-datSub %>%
-      ungroup()%>%
-      mutate(Pathogen=strsplit(Pathogen,";"))%>%
-      tidyr::unnest()%>%
-      group_by(Pathogen)%>%
-      count()
+    # pathogen<-datSub %>%
+    #   ungroup()%>%
+    #   mutate(Pathogen=strsplit(Pathogen,";"))%>%
+    #   tidyr::unnest()%>%
+    #   group_by(Pathogen)%>%
+    #   count()
     
     selectInput(inputId = "pathogenSelect",
                 label = "Pathogen:",
@@ -245,12 +229,12 @@ shinyServer(function(input, output,session) {
   
   # Widget : Dropdown menu for Concepts
   output$conceptUI<-renderUI({
-    concept<-datSub %>%
-      ungroup()%>%
-      mutate(concepts=strsplit(concepts,";"))%>%
-      tidyr::unnest()%>%
-      group_by(concepts)%>%
-      count()
+    # concept<-datSub %>%
+    #   ungroup()%>%
+    #   mutate(concepts=strsplit(concepts,";"))%>%
+    #   tidyr::unnest()%>%
+    #   group_by(concepts)%>%
+    #   count()
     
     selectInput(inputId = "conceptSelect",
                 label = "Topic:",
@@ -262,12 +246,12 @@ shinyServer(function(input, output,session) {
   
   # Widget: Dropdown menu to choose chart type
   output$chartTypeUI<-renderUI({
-    chartTypes<-datSub %>%
-      ungroup()%>%
-      mutate(chartType=strsplit(chartType,";"))%>%
-      tidyr::unnest()%>%
-      group_by(chartType)%>%
-      count()
+    # chartTypes<-datSub %>%
+    #   ungroup()%>%
+    #   mutate(chartType=strsplit(chartType,";"))%>%
+    #   tidyr::unnest()%>%
+    #   group_by(chartType)%>%
+    #   count()
     
     selectInput(inputId = "chartType",
                 label = "Chart Type",
@@ -297,7 +281,7 @@ shinyServer(function(input, output,session) {
   #Widget : dropdown menu for data caption
   output$captionLookUp<-renderUI({
     selectInput("captionSelect",
-                label="Data (from figure captions):",
+                label="Data (note that terms are stemmed):",
                 choices = c(usefulBigrams$bigram,usefulSingles$word),
                 selected=NULL,
                 multiple=TRUE)
@@ -306,7 +290,7 @@ shinyServer(function(input, output,session) {
   
   #Widget : Show only
   output$tagUI<-renderUI({
-    classTags<-unique(datSub$classExample)
+    #classTags<-unique(datSub$classExample)
     
     checkboxGroupButtons(
       inputId = "tagSelect", 
@@ -320,7 +304,7 @@ shinyServer(function(input, output,session) {
   })
   
   output$paperLookupUI<-renderUI({
-    PMIDUnique<-unique((datSub$PMID))
+    #PMIDUnique<-unique((datSub$PMID))
     selectInput(
       "paperSelect",
       label="Paper Lookup (PMID):",
@@ -332,17 +316,15 @@ shinyServer(function(input, output,session) {
   
   #widget: info box showing number of figures
   output$numFigBox<-renderUI({
-    
-    #browser()
     totalNum<-nrow(datSub) 
-    #totalShown<-nrow(datasetInput()) * ncol(datasetInput())
-    totalShown<-sum(!is.na(datasetInput()))
+    totalShown<-sum(as.vector(!is.na(datasetInput())) & grepl("<img",datasetInput()))
     
-    valueBox(value = paste0(round((totalShown/totalNum)*100),"%"),
-            subtitle  = paste(totalShown, "out of",totalNum,"figures"),
-            color = "light-blue",
-            width = 12)
+    HTML(paste0('<p style="color:black;">',
+                paste0('<strong style="font-size:20px;">',round((totalShown/totalNum)*100),"% </strong> of figures shown"),
+                paste0(" <strong>(",totalShown,"</strong> out of ",totalNum," figures)"),
+                '</p>'))
   })
+  
   #-----------------------------------------------
   # SUMMARIES
   #-----------------------------------------------
@@ -356,15 +338,13 @@ shinyServer(function(input, output,session) {
     outText
   })
   
-  
-  #output table for figure metadata
-  
-  output$summaryImageTable<-renderTable({
+
+  observe(
     if(length(values$code) == 0) {
       NULL
     } else {
       tmp<-filter(datSub,figID_initial == values$code)
-      #browser()
+      
       #chart types
       chartType<-unlist(strsplit(tmp$chartType,";"))
       specialChartType<-unlist(strsplit(tmp$specialChartType,";"))
@@ -423,11 +403,117 @@ shinyServer(function(input, output,session) {
                     rencodedMarks,
                     annotationsMarks)
       
-      outfig %>% filter(!is.na(chartType))
+      values$sumTable<-outfig %>% filter(!is.na(chartType))
     }
-    
+  )
+  
+  
+  #output table for figure metadata
+  output$summaryImageTable<-renderTable({
+    values$sumTable
   },
   colnames=FALSE,
   rownames=FALSE)
+  
+  output$summaryStatement<-renderUI({
+    #browser()
+    df<-values$sumTable
+    
+    summaryString<-""
+    
+    #Report Basic Chart Types
+    tmp<-filter(df,item == "Chart Type")
+    summaryString<-c(summaryString,
+                     paste0("This visualization was constructed using <strong>",
+                            nrow(tmp),
+                            ifelse(nrow(tmp)==1," type of chart, a "," types of charts, a "),
+                            paste(tmp$chartType,sep=","),
+                            "</strong>.")
+    )
+    #Combination
+    tmp<-filter(df,item == "Chart Combinations")
+    if(!("Simple" %in% tmp$chartType)){
+      summaryString<-c(summaryString,
+                       paste0("These charts were combined in a ",
+                              paste(tmp$chartType,sep=","),
+                              " pattern.")
+      )
+    }
+    
+    #Added Marks
+    tmp<-filter(df,item == "Added Marks")
+    if(nrow(tmp)>0){
+      summaryString<-c(summaryString,
+                       paste0("New marks were added to the base chart types to encode additional data. These marks took the form of a ",
+                              "<strong>",
+                              paste(tmp$chartType,sep=","),
+                              "</strong>."))
+    }
+    
+    #Reconded Marks
+    tmp<-filter(df,item == "Re-encoded Marks")
+    if(nrow(tmp)>0){
+      summaryString<-c(summaryString,
+                       paste0("Existing elements of the base chart type were modified (re-encoded) to include additional datal. Re-enconded marks included ",
+                              "<strong>",
+                              paste(tmp$chartType,sep=","),
+                              "</strong>."))
+    }
+    
+    #Annotatations
+    tmp<-filter(df,item == "Annotations")
+    if(nrow(tmp)>0){
+      summaryString<-c(summaryString,
+                       paste0("Specific elements within the basic chart types were annotated, for example highlighted or individual emphasized, using ",
+                              "<strong>",
+                              paste(tmp$chartType,sep=","),
+                              " marks.</strong>"))
+    }
+    
+    #concluding statement
+    summaryString<-c(summaryString,"<br><br><small><em> The table below summarizes the chart types, chart combinations, added and re-encoded marks (as well as the aesthetic properties of the marks used to encode data), and finally annotations.</em></small>")
+    #output
+    HTML(paste0(summaryString,collapse=" "))
+  })
+  
+  
+  #-----------------------------------------------
+  # Hiding/Showing DIVS
+  #-----------------------------------------------
+  # Shiny JS test elements
+  onclick("buttonToggle", toggle(id = "visContext", anim = TRUE))
+  onclick("buttonToggleTwo", toggle(id = "visProperties", anim = TRUE))
+  onclick("disclaimerButtonToggle", toggle(id = "disclaimer-text", anim = TRUE))
+  
+  observeEvent(input$buttonToggle,{
+    diffVal<-input$buttonToggle%%2
+    
+    if(diffVal == 1){
+      updateActionButton(session,"buttonToggle",label=" Hide",icon=icon("minus-square"))
+    }else{
+      updateActionButton(session,"buttonToggle",label=" Show",icon=icon("plus-square"))
+    }
+  })
+
+  
+  observeEvent(input$buttonToggleTwo,{
+    diffVal<-input$buttonToggleTwo%%2
+    
+    if(diffVal == 1){
+      updateActionButton(session,"buttonToggleTwo",label=" Hide",icon=icon("minus-square"))
+    }else{
+      updateActionButton(session,"buttonToggleTwo",label=" Show",icon=icon("plus-square"))
+    }
+  })
+  
+  observeEvent(input$disclaimerButtonToggle,{
+    diffVal<-input$disclaimerButtonToggle%%2
+    
+    if(diffVal == 1){
+      updateActionButton(session,"disclaimerButtonToggle",label="Show Disclaimer")
+    }else{
+      updateActionButton(session,"disclaimerButtonToggle",label="Hide Disclaimer")
+    }
+  })
 
 })
