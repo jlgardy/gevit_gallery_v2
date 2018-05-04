@@ -11,8 +11,6 @@ source("extras/utilityFunctions.R")
 load("data/analysisData.RData")
 load("data/widgetPopulatingData.RData")
 
-
-datSub<-datSub[1:6,]
 #-----------------------------------------------
 # Server Functions
 
