@@ -1,6 +1,5 @@
 library(shinydashboard)
 library(shinyWidgets)
-library(shinycssloaders)
 library(shinyjs)
 
 source("extras/utilityFunctions.R")

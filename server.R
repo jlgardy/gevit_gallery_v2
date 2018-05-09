@@ -425,16 +425,16 @@ shinyServer(function(input, output,session) {
                      paste0("This visualization was constructed using <strong>",
                             nrow(tmp),
                             ifelse(nrow(tmp)==1," type of chart, a "," types of charts, a "),
-                            paste(tmp$chartType,sep=","),
+                            paste0(tmp$chartType,collapse=", "),
                             "</strong>.")
     )
     #Combination
     tmp<-filter(df,item == "Chart Combinations")
     if(!("Simple" %in% tmp$chartType)){
       summaryString<-c(summaryString,
-                       paste0("These charts were combined in a ",
-                              paste(tmp$chartType,sep=","),
-                              " pattern.")
+                       paste0("These charts were combined in a <strong> ",
+                              paste0(tmp$chartType,collapse=", "),
+                              "</strong> pattern.")
       )
     }
     
@@ -444,7 +444,7 @@ shinyServer(function(input, output,session) {
       summaryString<-c(summaryString,
                        paste0("New marks were added to the base chart types to encode additional data. These marks took the form of a ",
                               "<strong>",
-                              paste(tmp$chartType,sep=","),
+                              paste0(tmp$chartType,collapse=", "),
                               "</strong>."))
     }
     
@@ -454,7 +454,7 @@ shinyServer(function(input, output,session) {
       summaryString<-c(summaryString,
                        paste0("Existing elements of the base chart type were modified (re-encoded) to include additional datal. Re-enconded marks included ",
                               "<strong>",
-                              paste(tmp$chartType,sep=","),
+                              paste0(tmp$chartType,collapse=", "),
                               "</strong>."))
     }
     
@@ -464,7 +464,7 @@ shinyServer(function(input, output,session) {
       summaryString<-c(summaryString,
                        paste0("Specific elements within the basic chart types were annotated, for example highlighted or individual emphasized, using ",
                               "<strong>",
-                              paste(tmp$chartType,sep=","),
+                              paste0(tmp$chartType,collapse=", "),
                               " marks.</strong>"))
     }
     
