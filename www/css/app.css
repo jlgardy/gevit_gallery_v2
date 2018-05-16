@@ -48,14 +48,25 @@
  background-color: white;
 }
 
-
+.skin-black .left-side, .skin-black .main-sidebar, .skin-black .wrapper{
+   background-color: #e8e8e8;
+   
+}
 section.sidebar .shiny-input-container{
-  padding: 2px 10px 2px 10px;
+  padding: 0px 10px 2px 10px;
   
 }
 
+.sidebar{
+  color:#5a5a5a;
+}
+
+
+
 .form-group{
   margin-bottom:0px;
+  padding:0px 0px 0px 0px;
+
 }
 
 label{
@@ -76,7 +87,7 @@ h4 {
   margin-bottom: 5px;
   margin-left: 10px;
   margin-right: 0;
-  color:#6FA1C4;
+  color:#276fa2;
   font-size:16px;
 }
 
@@ -188,3 +199,6 @@ img:not([src]) {
   background: linear-gradient(to left, rgba(252,236,150,0), rgba(252,236,150,1));
 }
 
+#paperLookupUI shiny-html-output shiny-bound-output{
+  height:10px;
+}

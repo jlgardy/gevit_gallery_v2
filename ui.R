@@ -54,7 +54,7 @@ body<-dashboardBody(
     tabPanel("Figure",
              hr(),
              uiOutput("imageInfo"),
-             actionButton("paperChoice","Look-up other figures from this paper"),
+             actionButton("paperChoice","Look up other figures from this paper"),
              br(),
              hr(),
              fluidRow(
@@ -90,7 +90,7 @@ sideDash<-dashboardSidebar(
   actionButton("disclaimerButtonToggle",label="Disclaimer (click to hide text)",class="btn-menu",width = "275px"),
   #br(),
   div(id = "disclaimer-text",style="padding-left:10px;padding-right:5px;",
-      HTML('<p style="color:white;font-size:14px;font-weight:300;"> The images in the GEViT gallery are presented solely for research purposes and under copyright Fair Use terms. Clicking on an image provides a link back to the original source publication. Beyond the images themselves no other materials relating to the published articles (such as PDFs of the full text) have been made available. If you are an author of a publication contained with this gallery and you would like your work to be removed please <a style="color:white;font-size:14px;font-weight:400;" href = "https://github.com/amcrisan/gevit_gallery_v2/issues">notify us.</a></p>'),
+      HTML('<p style="color:#5a5a5a;font-size:14px;font-weight:300;"> The images in the GEViT gallery are presented solely for research purposes and under copyright Fair Use terms. Clicking on an image provides a link back to the original source publication. Beyond the images themselves no other materials relating to the published articles (such as PDFs of the full text) have been made available. If you are an author of a publication contained with this gallery and you would like your work to be removed please <a style="color:#5a5a5a;font-size:14px;font-weight:400;" href = "https://github.com/amcrisan/gevit_gallery_v2/issues">notify us.</a></p>'),
       hr()
   ),
   HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Click the 'Show' buttons to reveal the different filters you can use to navigate the GEViT Gallery.</em></p> "),
@@ -99,10 +99,8 @@ sideDash<-dashboardSidebar(
   #hr(),
   uiOutput("paperLookupUI"),
   hr(),
-  div(style="display: inline-block;vertical-align:middle; width: 165px;",h4("Visualization Context")),
-  div(id = "popup",style="display: inline-block;vertical-align:middle; width: 60px;align:left;",
-      helpPopup(strong("Visualization Context Info"),includeMarkdown("explainerMarkDown/visContextExplainer.md"),placement = "right", trigger = "click")),
-  div(style="display: inline-block;vertical-align:middle; width: 55px;",actionButton("buttonToggle",label=" Show",class="btn-menu",width="50px",icon=icon("plus-square"))),
+  div(style="display: inline-block;vertical-align:middle; width: 210px;",h4("Visualization Context")),
+  div(style="display: inline-block;vertical-align:middle; width: 60px;",actionButton("buttonToggle",label=" Show",class="btn-menu",width="60px",icon=icon("plus-square"))),
   
   
   hidden(
@@ -114,10 +112,8 @@ sideDash<-dashboardSidebar(
     )
   ),
   hr(),
-  div(style="display: inline-block;vertical-align:top; width: 164px;",h4("Visualization Graphical Properties")),
-  div(id = "popup",style="display: inline-block;vertical-align:top; width: 60px;align:left;",
-      helpPopup(strong("Visualization Context Info"),includeMarkdown("explainerMarkDown/visPropertiesExplainer.md"),placement = "right", trigger = "click")),
-  div(style="display: inline-block;vertical-align:middle; top: 55px;",actionButton("buttonToggleTwo",label=" Show",class="btn-menu",width="50px",icon=icon("plus-square"))),
+  div(style="display: inline-block;vertical-align:top; width: 210px;",h4("Visualization Graphical Properties")),
+  div(style="display: inline-block;vertical-align:middle; top: 60px;",actionButton("buttonToggleTwo",label=" Show",class="btn-menu",width="60px",icon=icon("plus-square"))),
   
   hidden(
     div(id = "visProperties",
@@ -126,7 +122,8 @@ sideDash<-dashboardSidebar(
       uiOutput("specialChartTypeUI"),
       checkboxGroupInput("chartCombo",
                          label = "Chart Combinations",
-                         choices = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
+                         choiceNames = c("Simple","Composite","Small Multiples","Many Types Linked","Many Types General"),
+                         choiceValues = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
                          selected = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General")),
       HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
       materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),

@@ -101,7 +101,7 @@ shinyServer(function(input, output,session) {
         if(x=="Good Practice"){
           return('<p class="special-content-good">Good Practice</p>')
         }else if (x=="Missed Opportunity"){
-          return('<p class="special-content-missed">Missed Oppertunity</p>')
+          return('<p class="special-content-missed">Missed Opportunity</p>')
         }else{
           return('<p class="regular-content">No Status Assigned</p>')
         }
@@ -220,9 +220,10 @@ shinyServer(function(input, output,session) {
     
     selectInput(inputId = "pathogenSelect",
                 label = "Pathogen:",
-                choices=pathogen$Pathogen,
+                choices=c("Type to select a pathogen" = '',pathogen$Pathogen),
                 selected=NULL,
-                multiple=TRUE)
+                multiple=TRUE,
+                selectize = TRUE)
   })
   
   # Widget : Dropdown menu for Concepts
@@ -236,9 +237,10 @@ shinyServer(function(input, output,session) {
     
     selectInput(inputId = "conceptSelect",
                 label = "Topic:",
-                choices=concept$concepts,
+                choices=c("Type to select paper topics" = '',concept$concepts),
                 selected=NULL,
-                multiple=TRUE)
+                multiple=TRUE,
+                selectize = TRUE)
   })
   
   
@@ -253,9 +255,11 @@ shinyServer(function(input, output,session) {
     
     selectInput(inputId = "chartType",
                 label = "Chart Type",
-                choices=chartTypes$chartType,
+                choices=c("Type to select Chart Types" = '',chartTypes$chartType),
                 selected=NULL,
-                multiple=TRUE)
+                multiple=TRUE,
+                selectize = TRUE,
+                width =)
   })
   
   # Widget: Dropdown menu for special chart types
@@ -271,16 +275,17 @@ shinyServer(function(input, output,session) {
     
     selectInput(inputId = "specialChartType",
                 label = "Special Chart Type",
-                choices=choiceVals,
+                choices=c("Type to select Special Chart Types" = '',choiceVals),
                 selected=NULL,
-                multiple =TRUE)
+                multiple =TRUE,
+                selectize = TRUE)
   })
   
   #Widget : dropdown menu for data caption
   output$captionLookUp<-renderUI({
     selectInput("captionSelect",
                 label="Data (note that terms are stemmed):",
-                choices = c(usefulBigrams$bigram,usefulSingles$word),
+                choices = c("Type to select data" = '',usefulBigrams$bigram,usefulSingles$word),
                 selected=NULL,
                 multiple=TRUE)
   })
@@ -306,7 +311,7 @@ shinyServer(function(input, output,session) {
     selectInput(
       "paperSelect",
       label="Paper Lookup (PMID):",
-      choices =PMIDUnique,
+      choices = PMIDUnique,
       selected=NULL,
       multiple = TRUE
     )
@@ -414,10 +419,13 @@ shinyServer(function(input, output,session) {
   rownames=FALSE)
   
   output$summaryStatement<-renderUI({
-    #browser()
     df<-values$sumTable
     
     summaryString<-""
+    
+    if(is.null(values$code)){
+      return(summaryString)
+    }
     
     #Report Basic Chart Types
     tmp<-filter(df,item == "Chart Type")
