@@ -93,7 +93,7 @@ sideDash<-dashboardSidebar(
       HTML('<p style="color:white;font-size:14px;font-weight:300;"> The images in the GEViT gallery are presented solely for research purposes and under copyright Fair Use terms. Clicking on an image provides a link back to the original source publication. Beyond the images themselves no other materials relating to the published articles (such as PDFs of the full text) have been made available. If you are an author of a publication contained with this gallery and you would like your work to be removed please <a style="color:white;font-size:14px;font-weight:400;" href = "https://github.com/amcrisan/gevit_gallery_v2/issues">notify us.</a></p>'),
       hr()
   ),
-  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Use the different filters below to navigate the GEViT Gallery. Click the 'show' button to reveal the different filters. To get more information about each filter click the <i class='fas fa-info-circle'></i> icon</em></p> "),
+  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Click the 'Show' buttons to reveal the different filters you can use to navigate the GEViT Gallery.</em></p> "),
   hr(),
   #uiOutput("numFigBox"),
   #hr(),
