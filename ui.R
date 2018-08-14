@@ -41,6 +41,8 @@ body<-dashboardBody(
   ),
   #br(),
   tabsetPanel(
+    tabPanel("Getting Started",
+             includeMarkdown("explainerMarkDown/gettingStarted.md")),
     tabPanel("Catalogue",
              div(id = "grad",
                  uiOutput("numFigBox")
@@ -49,6 +51,14 @@ body<-dashboardBody(
              div(style="display: inline-block;vertical-align:middle; width: 450px;",uiOutput("tagUI")),
              br(),
              br(),
+             hidden(
+               div(id = "showPapers",
+                   div(style="display: inline-block;vertical-align:middle; width: 580px;",HTML("<strong style='color:red;'>Currently, only showing results from one paper. To show all papers click the adjacent button:</strong>")),
+                   div(style="display: inline-block;vertical-align:middle; width: 130px;",actionButton("showAllPapers",label=" Show All Papers",class="btn-menu",width="125px")),
+                   br(),
+                   br()
+               )
+             ),
              tableOutput("imageGrid")
     ),
     tabPanel("Figure",
@@ -86,50 +96,25 @@ body<-dashboardBody(
 #-------------------------------------------------------------------------
 sideDash<-dashboardSidebar(
   width="300px",
-  br(),
-  actionButton("disclaimerButtonToggle",label="Disclaimer (click to hide text)",class="btn-menu",width = "275px"),
-  #br(),
-  div(id = "disclaimer-text",style="padding-left:10px;padding-right:5px;",
-      HTML('<p style="color:#5a5a5a;font-size:14px;font-weight:300;"> The images in the GEViT gallery are presented solely for research purposes and under copyright Fair Use terms. Clicking on an image provides a link back to the original source publication. Beyond the images themselves no other materials relating to the published articles (such as PDFs of the full text) have been made available. If you are an author of a publication contained with this gallery and you would like your work to be removed please <a style="color:#5a5a5a;font-size:14px;font-weight:400;" href = "https://github.com/amcrisan/gevit_gallery_v2/issues">notify us.</a></p>'),
-      hr()
-  ),
-  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Click the 'Show' buttons to reveal the different filters you can use to navigate the GEViT Gallery.</em></p> "),
+  h4("Visualization Context"),
+  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by pathogen, a priori topics, or terms within figure captions (note that terms are stemmed)</em></p>"),
+  uiOutput("pathogenUI"),
+  uiOutput("conceptUI"),
+  uiOutput("captionLookUp"),
   hr(),
-  #uiOutput("numFigBox"),
-  #hr(),
-  uiOutput("paperLookupUI"),
-  hr(),
-  div(style="display: inline-block;vertical-align:middle; width: 210px;",h4("Visualization Context")),
-  div(style="display: inline-block;vertical-align:middle; width: 60px;",actionButton("buttonToggle",label=" Show",class="btn-menu",width="60px",icon=icon("plus-square"))),
-  
-  
-  hidden(
-    div(id = "visContext",
-        HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by pathogen, derived paper topics, or data terms within figure captions</em></p>"),
-      uiOutput("pathogenUI"),
-      uiOutput("conceptUI"),
-      uiOutput("captionLookUp")
-    )
-  ),
-  hr(),
-  div(style="display: inline-block;vertical-align:top; width: 210px;",h4("Visualization Graphical Properties")),
-  div(style="display: inline-block;vertical-align:middle; top: 60px;",actionButton("buttonToggleTwo",label=" Show",class="btn-menu",width="60px",icon=icon("plus-square"))),
-  
-  hidden(
-    div(id = "visProperties",
-      HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by chart types, chart combinations, and whether visualizations have chart elements enhanced or re-encoded</em></p>"),
-      uiOutput("chartTypeUI"),
-      uiOutput("specialChartTypeUI"),
-      checkboxGroupInput("chartCombo",
+  h4("Visualization Design"),
+  HTML("<p style='margin-left: 10px;margin-right:5px;'><em>Filter by chart types, chart combinations, and whether visualizations have chart elements enhanced or re-encoded</em></p>"),
+  uiOutput("chartTypeUI"),
+  uiOutput("specialChartTypeUI"),
+  checkboxGroupInput("chartCombo",
                          label = "Chart Combinations",
                          choiceNames = c("Simple","Composite","Small Multiples","Many Types Linked","Many Types General"),
                          choiceValues = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General"),
                          selected = c("Simple","Composite","Small Multiples","Multiple Linked","Multiple General")),
-      HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
-      materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
-      br(),
-      materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE)
-    ))
+  HTML("<p style='margin-left:10px';>Chart Enhancements</p>"),
+  materialSwitch("addMarksSelect",label = "Must have added marks",value = FALSE,right=TRUE,status="danger"),
+  br(),
+  materialSwitch("rencodeMarksSelect",label = "Must have re-encoded marks",value = FALSE,right=TRUE)
 )
 
 #-------------------------------------------------------------------------

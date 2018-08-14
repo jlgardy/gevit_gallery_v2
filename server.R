@@ -78,7 +78,7 @@ shinyServer(function(input, output,session) {
               filtData(tmpDat,"addedMarks",input$addMarksSelect)$figID_initial,
               filtData(tmpDat,"reencodedMarks",input$rencodeMarksSelect)$figID_initial,
               filtData(tmpDat,"classExample",input$tagSelect)$figID_initial,
-              filtData(tmpDat,"PMID",input$paperSelect)$figID_initial)
+              filtData(tmpDat,"PMID",values$paperSelect)$figID_initial)
     
     
     tmp<-table(filtID)
@@ -133,7 +133,8 @@ shinyServer(function(input, output,session) {
     clicked = FALSE,
     code = NULL,
     scrollPos = NULL,
-    sumTable = NULL
+    sumTable = NULL,
+    paperSelect = NULL
   )
   
   
@@ -197,12 +198,18 @@ shinyServer(function(input, output,session) {
     }
   })
   
+  
   observeEvent(input$paperChoice,{
     if(!is.null(values$code)){
       tmp<-filter(datSub,figID_initial == values$code)
-      updateSelectInput(session,"paperSelect",selected=unique(tmp$PMID))
+      values$paperSelect<-tmp$PMID
+      #updateSelectInput(session,"paperSelect",selected=unique(tmp$PMID))
       updateTabsetPanel(session,"opsPanel",selected = "Catalogue")
     }
+  })
+  
+  observeEvent(input$showAllPapers,{
+    values$paperSelect<-NULL
   })
   
   #-----------------------------------------------
@@ -236,7 +243,7 @@ shinyServer(function(input, output,session) {
     #   count()
     
     selectInput(inputId = "conceptSelect",
-                label = "Topic:",
+                label = "A priori concept:",
                 choices=c("Type to select paper topics" = '',concept$concepts),
                 selected=NULL,
                 multiple=TRUE,
@@ -284,7 +291,7 @@ shinyServer(function(input, output,session) {
   #Widget : dropdown menu for data caption
   output$captionLookUp<-renderUI({
     selectInput("captionSelect",
-                label="Data (note that terms are stemmed):",
+                label="Figure caption text:",
                 choices = c("Type to select data" = '',usefulBigrams$bigram,usefulSingles$word),
                 selected=NULL,
                 multiple=TRUE)
@@ -306,16 +313,20 @@ shinyServer(function(input, output,session) {
     )
   })
   
-  output$paperLookupUI<-renderUI({
-    #PMIDUnique<-unique((datSub$PMID))
-    selectInput(
-      "paperSelect",
-      label="Paper Lookup (PMID):",
-      choices = PMIDUnique,
-      selected=NULL,
-      multiple = TRUE
-    )
-  })
+  # output$paperLookupUI<-renderUI({
+  #   #PMIDUnique<-unique((datSub$PMID))
+  #   if(is.null(input$paperChoice)){
+  #     return(NULL)
+  #   }else{
+  #     selectInput(
+  #       "paperSelect",
+  #       label="Paper Lookup (PMID):",
+  #       choices = PMIDUnique,
+  #       selected=NULL,
+  #       multiple = TRUE
+  #     )
+  #   }
+  # })
   
   #widget: info box showing number of figures
   output$numFigBox<-renderUI({
@@ -418,7 +429,8 @@ shinyServer(function(input, output,session) {
   colnames=FALSE,
   rownames=FALSE)
   
-  output$summaryStatement<-renderUI({
+  output$summaryStatement<-renderUI({gc()
+    
     df<-values$sumTable
     
     summaryString<-""
@@ -487,39 +499,7 @@ shinyServer(function(input, output,session) {
   # Hiding/Showing DIVS
   #-----------------------------------------------
   # Shiny JS test elements
-  onclick("buttonToggle", toggle(id = "visContext", anim = TRUE))
-  onclick("buttonToggleTwo", toggle(id = "visProperties", anim = TRUE))
-  onclick("disclaimerButtonToggle", toggle(id = "disclaimer-text", anim = TRUE))
+  onclick("paperChoice",toggle(id="showPapers"))
+  onclick("showAllPapers",toggle(id="showPapers"))
   
-  observeEvent(input$buttonToggle,{
-    diffVal<-input$buttonToggle%%2
-    
-    if(diffVal == 1){
-      updateActionButton(session,"buttonToggle",label=" Hide",icon=icon("minus-square"))
-    }else{
-      updateActionButton(session,"buttonToggle",label=" Show",icon=icon("plus-square"))
-    }
-  })
-
-  
-  observeEvent(input$buttonToggleTwo,{
-    diffVal<-input$buttonToggleTwo%%2
-    
-    if(diffVal == 1){
-      updateActionButton(session,"buttonToggleTwo",label=" Hide",icon=icon("minus-square"))
-    }else{
-      updateActionButton(session,"buttonToggleTwo",label=" Show",icon=icon("plus-square"))
-    }
-  })
-  
-  observeEvent(input$disclaimerButtonToggle,{
-    diffVal<-input$disclaimerButtonToggle%%2
-    
-    if(diffVal == 1){
-      updateActionButton(session,"disclaimerButtonToggle",label="Show Disclaimer")
-    }else{
-      updateActionButton(session,"disclaimerButtonToggle",label="Hide Disclaimer")
-    }
-  })
-
 })
